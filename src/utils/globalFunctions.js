@@ -27,7 +27,7 @@ export const createResponsiveSwiper = (
     // Step 4: Add unique classes to swiper container, arrows and pagination for this instance
     addUniqueClassesToElements(this, swiperSelector, uniqueKey, [
       '.swiper-arrow',
-      '.swiper-pagination',
+      '.swiper-pag',
       '.swiper-drag-wrapper',
     ]);
 
@@ -57,6 +57,13 @@ const getMergedSwiperOptions = (options, uniqueKey) => {
     navigation: {
       prevEl: `.swiper-arrow.prev.${uniqueKey}`,
       nextEl: `.swiper-arrow.next.${uniqueKey}`,
+    },
+    pagination: {
+      el: `.swiper-pag.${uniqueKey}`,
+      type: 'bullets',
+      bulletActiveClass: 'cc-active',
+      bulletClass: 'swiper-pag-item',
+      clickable: true,
     },
   });
 };
@@ -105,6 +112,7 @@ const manageSwiperInstance = (
     }
 
     const swiperElement = $(`${swiperSelector}.${uniqueKey}`)[0];
+    console.log(swiperElement);
     const observer = new IntersectionObserver((entries) => {
       entries.forEach((entry) => {
         if (entry.isIntersecting && (shouldInitDesktop || shouldInitMobile || shouldInitAll)) {

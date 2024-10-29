@@ -1,42 +1,52 @@
 import { initSwipers } from './utils/globalFunctions';
-import { gridFade, imageReveal } from './utils/reusableAnimations';
-
-gsap.defaults({ ease: Power1.easeOut, duration: 0.8 });
 
 $(document).ready(() => {
-  // #region Nav
+  // #region Videos
 
-  function debounce(func, wait) {
-    let timeout;
-    return function (...args) {
-      const later = () => {
-        clearTimeout(timeout);
-        func.apply(this, args);
-      };
-      clearTimeout(timeout);
-      timeout = setTimeout(later, wait);
+  // Ensure any promises or async loading are caught
+  $('.plyr_video').each(function () {
+    let playerOptions = {
+      controls: ['play', 'progress', 'current-time', 'mute', 'volume'],
+      clickToPlay: true,
     };
-  }
 
-  let isFixed = sessionStorage.getItem('navbarState');
+    try {
+      // Get the video src from the parent attribute
+      const videoSrc = $(this).parent().attr('data-video-src');
 
-  if (isFixed) {
-    $('.nav').removeClass('large');
-  }
+      // Set the source for the current video element
+      if (videoSrc) {
+        $(this).attr('src', videoSrc);
+      }
 
-  let tl = gsap.timeline({
-    scrollTrigger: {
-      trigger: $('.nav_wrapper'),
-      start: () => '10px top',
-      end: 'bottom top',
-      onLeave: debounce(() => {
-        if (!isFixed) {
-          isFixed = sessionStorage.setItem('navbarState', 'true');
-          $('.nav').removeClass('large');
-        }
-      }, 200), // Adjust the debounce delay as needed
-    },
+      // Initialize the player
+      const player = new Plyr($(this), playerOptions);
+      players.push(player);
+    } catch (e) {
+      console.error('Error initializing Plyr:', e);
+    }
   });
+
+  // Thumb Click
+  // Thumb Click
+  $('[data-plyr="component"]').on('click', function () {
+    const currentPlayer = $(this).find('.plyr_video')[0]; // Assume video element has [data-plyr="video"]
+    pauseAllPlayers(currentPlayer);
+    $(this).find('[data-plyr="cover"]').hide();
+  });
+
+  // Function to pause all players except the current one
+  function pauseAllPlayers(currentPlayer) {
+    // Show all covers
+    $('[data-plyr="cover"]').show();
+
+    // Pause all players except the current one
+    players.forEach(function (player) {
+      if (player.media !== currentPlayer) {
+        player.pause();
+      }
+    });
+  }
 
   // #endregion
 
@@ -45,295 +55,355 @@ $(document).ready(() => {
   // Base Swiper
   const swiperInstances = [
     [
-      '.swiper-box.cc-youtube',
-      '.swiper-box_inner',
-      'videos',
+      '.impact_slider',
+      '.swiper-slider-wrap',
+      'hear-testimonials',
       {
-        slidesPerView: 'auto',
+        breakpoints: {
+          0: {
+            slidesPerView: 1,
+            spaceBetween: 12,
+          },
+          480: {
+            slidesPerView: 2,
+            spaceBetween: 24,
+          },
+          992: {
+            slidesPerView: 3,
+          },
+        },
+        on: {
+          slideChange: pauseAllPlayers,
+        },
       },
       'all',
     ],
     [
-      '.swiper-box.cc-articles',
-      '.swiper-box_inner',
-      'articles',
+      '.pills_wrap',
+      '.swiper-slider-wrap',
+      'pills-homepage',
+      {
+        slidesPerView: 'auto',
+        spaceBetween: 24,
+      },
+      'mobile',
+    ],
+    [
+      '.solutions_slider',
+      '.swiper-slider-wrap',
+      'solutions-homepage',
+      {
+        breakpoints: {
+          0: {
+            slidesPerView: 1,
+            spaceBetween: 12,
+          },
+          480: {
+            slidesPerView: 2,
+            spaceBetween: 24,
+          },
+          992: {
+            slidesPerView: 3,
+          },
+        },
+      },
+      'all',
+    ],
+    [
+      '.section.cc-testimonials',
+      '.swiper-slider-wrap',
+      'testimonials-homepage',
       {
         slidesPerView: 1,
+        centeredSlides: true,
+        loop: true,
+        spaceBetween: 12,
+        on: {
+          init: (swiper) => {
+            let index = swiper.realIndex + 1;
+            let slides = swiper.slides.length;
+            $(swiper.el).find('[data-counter]').text(`${index}/${slides}`);
+          },
+          slideChange: (swiper) => {
+            let index = swiper.realIndex + 1;
+            let slides = swiper.slides.length;
+            $(swiper.el).find('[data-counter]').text(`${index}/${slides}`);
+          },
+        },
       },
       'all',
     ],
     [
-      '.swiper-box.cc-podcast',
-      '.swiper-box_inner',
-      'podcast',
+      '.events_slider',
+      '.swiper-slider-wrap',
+      'featured-events',
+      {
+        slidesPerView: 1,
+        spaceBetween: 24,
+      },
+      'all',
+    ],
+    [
+      '.connect_slider',
+      '.swiper-slider-wrap',
+      'events-gallery',
+      {
+        breakpoints: {
+          0: {
+            slidesPerView: 1.1,
+            spaceBetween: 16,
+          },
+          489: {
+            slidesPerView: 2,
+            spaceBetween: 16,
+          },
+          768: {
+            slidesPerView: 3,
+            spaceBetween: 16,
+          },
+          992: {
+            slidesPerView: 4,
+            spaceBetween: 16,
+          },
+        },
+      },
+      'all',
+    ],
+    [
+      '.founders_slider',
+      '.swiper-slider-wrap',
+      'founders-stats',
       {
         slidesPerView: 'auto',
+        spaceBetween: 24,
       },
       'all',
     ],
     [
-      '.swiper-box.cc-testimonials',
-      '.swiper-box_inner',
-      'testimonials',
+      '.gallery_slider',
+      '.swiper-slider-wrap',
+      'gallery',
       {
-        slidesPerView: '1',
-        effect: 'fade',
-        fadeEffect: {
-          crossFade: true,
+        breakpoints: {
+          0: {
+            slidesPerView: 1.1,
+            spaceBetween: 16,
+          },
+          489: {
+            slidesPerView: 2,
+            spaceBetween: 16,
+          },
+          768: {
+            slidesPerView: 3,
+            spaceBetween: 16,
+          },
         },
-        autoHeight: true,
+      },
+      'all',
+    ],
+    [
+      '.speaker_slider',
+      '.swiper-slider-wrap',
+      'speakers',
+      {
+        breakpoints: {
+          0: {
+            slidesPerView: 1.1,
+            spaceBetween: 16,
+          },
+          489: {
+            slidesPerView: 2,
+            spaceBetween: 16,
+          },
+          768: {
+            slidesPerView: 3,
+            spaceBetween: 16,
+          },
+        },
+      },
+      'all',
+    ],
+    [
+      '.solutions-top_slider',
+      '.swiper-slider-wrap',
+      'services',
+      {
+        slidesPerView: 1,
+        spaceBetween: 24,
+      },
+      'all',
+    ],
+    [
+      '.hear-videos_wrap',
+      '.swiper-slider-wrap',
+      'hear-videos',
+      {
+        slidesPerView: 'auto',
+        spaceBetween: 24,
+      },
+      'mobile',
+    ],
+    [
+      '.info-session_slider',
+      '.swiper-slider-wrap',
+      'info-session',
+      {
+        breakpoints: {
+          0: {
+            slidesPerView: 1.1,
+            spaceBetween: 16,
+          },
+          489: {
+            slidesPerView: 2,
+            spaceBetween: 16,
+          },
+          992: {
+            slidesPerView: 3,
+            spaceBetween: 24,
+          },
+        },
       },
       'all',
     ],
   ];
 
-  // Init
-  $(document).ready(function () {
-    initSwipers(swiperInstances);
-  });
+  initSwipers(swiperInstances);
 
   // #endregion
 
-  // #region Transition
-  function resetWebflow(data) {
-    let parser = new DOMParser();
-    let dom = parser.parseFromString(data.next.html, 'text/html');
-    let webflowPageId = $(dom).find('html').attr('data-wf-page');
-    $('html').attr('data-wf-page', webflowPageId);
-    window.Webflow && window.Webflow.destroy();
-    window.Webflow && window.Webflow.ready();
-    window.Webflow && window.Webflow.require('ix2').init();
-  }
+  // #region Filters
+  //Filter Reset Button
+  window.fsAttributes.push([
+    'cmsfilter',
+    (filterInstances) => {
+      // Ensure filterInstances is defined and not empty
+      if (filterInstances && filterInstances.length > 0) {
+        const [filterInstance] = filterInstances;
 
-  function initFsAttributes() {
-    window.fsAttributes = window.fsAttributes || [];
-    window.fsAttributes.push([
-      'cmsload',
-      (listInstances) => {
-        console.log('cmsload Successfully loaded!');
+        // Check if filterInstance exists and resetButtonsData has keys
+        if (
+          filterInstance &&
+          filterInstance.resetButtonsData &&
+          filterInstance.resetButtonsData.size > 0
+        ) {
+          const resetBtn = [...filterInstance.resetButtonsData.keys()][0];
 
-        // The callback passes a `listInstances` array with all the `CMSList` instances on the page.
-        const [listInstance] = listInstances;
+          // Check if filtersData exists and has the necessary data
+          if (filterInstance.filtersData && filterInstance.filtersData[0]) {
+            function updateResetBtn(entries) {
+              if (entries >= 1) {
+                if (resetBtn) {
+                  $(resetBtn).removeClass('fs-cmsfilter_active');
+                }
+              } else {
+                if (resetBtn) {
+                  $(resetBtn).addClass('fs-cmsfilter_active');
+                }
+              }
+            }
 
-        // The `renderitems` event runs whenever the list renders items after switching pages.
-        listInstance.on('renderitems', (renderedItems) => {
-          console.log(renderedItems);
+            // Init
+            updateResetBtn(0);
+
+            filterInstance.listInstance.on('renderitems', function () {
+              let entries = filterInstance.filtersData[0].values.size;
+              updateResetBtn(entries);
+            });
+          }
+        }
+      }
+    },
+  ]);
+
+  // Founders Weekend Filters
+  $('[data-filters="founders"]').each(function () {
+    let activeClass = 'fs-cmsfilter_active';
+    const filters = $(this).find('.filter-tag');
+    const items = $('[data-items="founders"]').find('.schedule_list-item').toArray();
+
+    filters.on('click', function () {
+      let filterText = $(this).text();
+
+      filters.removeClass(activeClass);
+      $(this).addClass(activeClass);
+
+      // Hide all items initially
+      $(items).hide();
+
+      if (filterText !== 'All') {
+        // Filter and show matching items
+        items.forEach(function (item) {
+          let text = $(item).find('[fs-cmsfilter-field="category"]').text();
+
+          if (text === filterText) {
+            $(item).show(); // Show only matching items
+          }
         });
-      },
-    ]);
-  }
-
-  /*
-  barba.init({
-    transitions: [
-      {
-        name: 'opacity-transition',
-        leave(data) {
-          let tl = gsap.timeline({ defaults: { ease: 'power2.out' } });
-          tl.set('.nav_transition', { opacity: 1 });
-          tl.to('.nav_transition', { height: '100vh', duration: 0.8 });
-          return tl;
-        },
-        enter(data) {
-          // Reset Webflow interactions
-          resetWebflow(data);
-        },
-        after(data) {
-          gsapReset();
-
-          // Initialize fsAttributes
-          initFsAttributes();
-
-          // Animate the nav_transition element
-          let tl = gsap.timeline({ defaults: { ease: 'power2.out' } });
-          tl.set('.nav_transition', { opacity: 0 });
-          tl.to('.nav_transition', { height: '100%', duration: 0.8 });
-          return tl;
-        },
-      },
-    ],
-  });
-  */
-
-  // #endregion
-
-  // #region Animations
-  function gsapReset() {
-    let isDesktop = $(window).width() > 991;
-
-    $('[data-animation="section"]').each(function () {
-      // els
-      let trigger = $(this);
-      let heading = $(this).find('[data-animation="heading"]');
-      let items = $(this).find('[data-animation="item"]');
-      let itemsStart = $(this).find('[data-animation="item-start"]'); // since we have the position parameters set, we need to use this if we want to animate the items on start
-      let itemsStagger = $(this).find('[data-animation="stagger"]'); // childs = [data-animation="stagger-item"]
-      let imgScale = $(this).find('[data-animation="img-scale"]');
-      let verticalReveal = $(this).find('[data-animation="vertical-reveal"]');
-      let horizontalReveal = $(this).find('[data-animation="horizontal-reveal"]');
-      let signature = $(this).find('[data-animation="signature"]');
-      let fade = $(this).find('[data-animation="fade"]');
-
-      // properties
-      let realIndex = $(this).eq(0).index();
-      let stagger = trigger.attr('data-stagger') || 0.2;
-      let start = trigger.attr('data-start') || isDesktop ? 'top 80%' : 'top 70%';
-
-      let tl = gsap.timeline({
-        scrollTrigger: {
-          trigger: realIndex === 0 ? 'body' : trigger,
-          start: realIndex === 0 ? '-10 top' : start,
-        },
-      });
-
-      if (heading.length) {
-        let type = heading.attr('data-split-type') || 'line';
-        let typeSplit = new SplitType(heading, {
-          types: 'lines, words, chars',
-          tagName: 'span',
-        });
-
-        tl.from(
-          heading.find(`.${type}`),
-          {
-            y: '2rem',
-            opacity: 0,
-            duration: 1,
-            ease: 'power3.out',
-            stagger: 0.1,
-          },
-          '<'
-        );
-      }
-      if (itemsStart.length) {
-        tl.from(itemsStart, { y: '2rem', opacity: 0, stagger: stagger }, '<');
-      }
-      if (imgScale.length) {
-        tl.from(imgScale, { scale: 1.2 }, '<');
-      }
-      if (verticalReveal.length) {
-        verticalReveal.each(function () {
-          let tlSmall = gsap.timeline();
-
-          let masks = $(this).find('.vertical-mask');
-          let img = $(this).find('img');
-
-          gsap.set(masks, { y: 0, yPercent: 0 });
-
-          tlSmall.to(masks.eq(0), { yPercent: -100, duration: 1.5, ease: 'power3.inOut' }, '<');
-          tlSmall.to(masks.eq(1), { yPercent: 100, duration: 1.5, ease: 'power3.inOut' }, '<');
-          tlSmall.from(img, { scale: 1.2 }, '<');
-
-          tl.add(tlSmall, '<');
-        });
-      }
-      if (horizontalReveal.length) {
-        horizontalReveal.each(function () {
-          let tlSmall = gsap.timeline();
-
-          let mask = $(this).find('.horizontal-mask');
-
-          let directionAttr = mask.attr('data-direction');
-          let direction = directionAttr === 'left' ? 100 : directionAttr === 'right' ? -100 : 0;
-
-          let img = $(this).find('img');
-
-          gsap.set(mask, { x: 0, xPercent: 0 });
-
-          tlSmall.to(
-            mask,
-            {
-              xPercent: -100,
-              duration: 1.7,
-              ease: 'power3.inOut',
-              force3D: true,
-            },
-            '<'
-          );
-
-          tlSmall.from(img, { scale: 1.2, duration: 2 }, '<');
-
-          tl.add(tlSmall, '<');
-        });
-      }
-      if (items.length) {
-        const previousTweens = tl.getChildren(); // Get all tweens in the timeline
-        tl.from(
-          items,
-          { y: '2rem', opacity: 0, stagger: stagger },
-          previousTweens.length > 0 ? '<' : '<'
-        );
-      }
-      if (itemsStagger.length) {
-        itemsStagger.each(function () {
-          let items = $(this).find('[data-animation="stagger-item"]');
-          let stagger = $(this).attr('data-stagger') || 0.1;
-
-          tl.from(items, { y: '1rem', opacity: 0, stagger: stagger }, '<');
-        });
-      }
-      if (fade.length) {
-        fade.each(function () {
-          tl.from($(this), { opacity: 0 }, '<');
-        });
-      }
-      if (signature.length) {
-        let directionAttr = signature.attr('data-direction');
-        let direction = directionAttr === 'left' ? -15 : directionAttr === 'right' ? 15 : 0;
-
-        tl.from(signature, { opacity: 0, rotate: direction, duration: 0.4 }, '<0.2');
+      } else {
+        $(items).show();
       }
     });
+  });
 
-    $('.rotate-text_circle').each(function (index, element) {
-      let rotationDirection = index % 2 === 0 ? 30 : -30;
-      gsap.to(element, {
-        scrollTrigger: {
-          trigger: element,
-          start: 'top bottom',
-          end: 'bottom top',
-          scrub: 1,
-        },
-        rotation: rotationDirection,
-        ease: 'none',
+  window.fsAttributes = window.fsAttributes || [];
+  window.fsAttributes.push([
+    'cmsfilter',
+    (filterInstances) => {
+      console.log('cmsfilter Successfully loaded!');
+
+      // Get Nested Filters
+      $('.solutions-filter_row-checkbox').each(function () {
+        let $this = $(this);
+        let slug = $this.attr('data-slug');
+
+        // Load content right below the current .solutions-filter_row-checkbox
+        $this
+          .siblings('.solutions-filter_nest')
+          .load(`/global-tags/${slug} .solutions-filter_row-inner`, function (response, status) {
+            if (status === 'success') {
+              // Hide empty rows
+              $this.siblings('.solutions-filter_nest').each(function () {
+                if (!$(this).children().length) {
+                  $(this).hide();
+                  $this.find('.solutions-filter-inner-icon').hide();
+                }
+              });
+              resetFS();
+            }
+          });
       });
-    });
+
+      // Get Nested Sub Tags
+      $('.solutions-index_grid')
+        .find('.index_card')
+        .each(function () {
+          let $this = $(this);
+          let slug = $this.attr('data-slug');
+
+          // Load content right below the current .solutions-filter_row-checkbox
+          $this
+            .find('[data-nested-wrap]')
+            .load(`/solutions/${slug} [data-nested-filters]`, function (status) {
+              if (status === 'success') {
+                resetFS();
+              }
+            });
+        });
+
+      // The callback passes a `filterInstances` array with all the `CMSFilters` instances on the page.
+      const [filterInstance] = filterInstances;
+      console.log(filterInstance.listInstance);
+    },
+  ]);
+
+  function resetFS() {
+    window.fsAttributes.cmsfilter.destroy();
+    window.fsAttributes.cmsfilter.init();
   }
 
-  gsapReset();
-
   // #endregion
 
-  // #region YT Videos
-  $('[data-yt-video="trigger"]').on('click', function () {
-    let self = $(this);
-    let overlay = self.find('[data-yt-video="overlay"]');
-    console.log(overlay);
-    let embedIframe = self.find('.w-embed-youtubevideo').find('iframe');
-    let iframeSrc = embedIframe.attr('src');
-
-    let flag = 'revelead';
-
-    // Update URL
-    function updateAutoplay(url) {
-      let urlObj = new URL(url);
-      urlObj.searchParams.set('autoplay', '1');
-      return urlObj.toString();
-    }
-
-    let updatedUrl = updateAutoplay(iframeSrc);
-
-    // Update Visual
-    if (!self.hasClass(flag)) {
-      self.addClass(flag);
-
-      overlay.hide();
-      embedIframe.attr('src', updatedUrl);
-    }
-  });
-  // #endregion
-
-  // #region Helpers
+  // #Copy URL
   $(document).ready(function () {
     $('[data-copy]').on('click', function () {
       let type = $(this).attr('data-copy');
