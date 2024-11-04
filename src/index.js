@@ -10,6 +10,8 @@ $(document).ready(() => {
 
   let hamOpen = false;
 
+  // !!! add scroll disabler !!!
+
   // #region Nav
   let dropdownCards = $('.nav_dropdown-content-inner');
   let smallDropdowns = $('.nav_dropdown-small');

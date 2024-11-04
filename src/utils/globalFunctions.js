@@ -112,7 +112,6 @@ const manageSwiperInstance = (
     }
 
     const swiperElement = $(`${swiperSelector}.${uniqueKey}`)[0];
-    console.log(swiperElement);
     const observer = new IntersectionObserver((entries) => {
       entries.forEach((entry) => {
         if (entry.isIntersecting && (shouldInitDesktop || shouldInitMobile || shouldInitAll)) {
