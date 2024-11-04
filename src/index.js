@@ -52,7 +52,7 @@ $(document).ready(() => {
   }
   function showMenu() {
     hamOpen = true;
-    navMenu.show();
+    navMenu.css('display', 'flex');
     navHam.addClass('cc-open');
   }
   function hideMenu() {
