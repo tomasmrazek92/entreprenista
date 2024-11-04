@@ -1,6 +1,111 @@
 import { initSwipers } from './utils/globalFunctions';
 
 $(document).ready(() => {
+  const isMobile = () => {
+    return $(window).width() < 992;
+  };
+  function isTriggerEvent(e) {
+    return (e.type === 'mouseenter' && !isMobile()) || (e.type === 'click' && isMobile());
+  }
+
+  let hamOpen = false;
+
+  // #region Nav
+  let dropdownCards = $('.nav_dropdown-content-inner');
+  let smallDropdowns = $('.nav_dropdown-small');
+  let navMenu = $('.nav_inner');
+  let backBtn = $('.nav_back');
+  let navBrand = $('.nav_brand');
+  let navHam = $('.nav_ham');
+
+  function showBigDropdown(index) {
+    dropdownCards.hide().eq(index).css('display', 'flex');
+    if (isMobile()) {
+      backBtn.css('display', 'flex');
+      navBrand.hide();
+    }
+    navOverlay(true);
+  }
+  function showSmallDropdown(el) {
+    hideDropdownCards();
+    $(el).siblings(smallDropdowns).show();
+    if (isMobile()) {
+      backBtn.css('display', 'flex');
+      navBrand.hide();
+    }
+    navOverlay(true);
+  }
+  function hideDropdownCards() {
+    dropdownCards.hide();
+    smallDropdowns.hide();
+    backBtn.hide();
+    navBrand.show();
+    navOverlay(false);
+  }
+  function navOverlay(state) {
+    let overlay = $('.nav_bg');
+    if (state) {
+      overlay.stop().fadeIn();
+    } else {
+      overlay.stop().fadeOut();
+    }
+  }
+  function showMenu() {
+    hamOpen = true;
+    navMenu.show();
+    navHam.addClass('cc-open');
+  }
+  function hideMenu() {
+    hamOpen = false;
+    navMenu.hide();
+    navHam.removeClass('cc-open');
+    hideDropdownCards();
+  }
+
+  // Large Dropdowns
+  $('.nav_dropdowns-large .nav_dropdown-trigger').on('mouseenter click', function (e) {
+    let index = $(this).index();
+    if (isTriggerEvent(e)) {
+      showBigDropdown(index);
+    }
+  });
+
+  $('.nav').on('mouseleave', function (event) {
+    // Check if the mouse is moving to an element inside `.nav`
+    if (!$(event.relatedTarget).closest('.nav').length) {
+      hideDropdownCards();
+    }
+  });
+
+  $(document).on('click', function (event) {
+    if (!$(event.target).closest('.nav').length) {
+      hideDropdownCards();
+    }
+  });
+
+  // Small Dropdowns
+  $('.nav_dropdowns-small .nav_dropdown-trigger').on('mouseenter click', function (e) {
+    if (isTriggerEvent(e)) {
+      showSmallDropdown($(this));
+    }
+  });
+
+  // Ham Button
+  navHam.on('click', function () {
+    if (!hamOpen) {
+      showMenu();
+    } else {
+      hideMenu();
+    }
+  });
+
+  // Back Button
+  $('.nav_back').on('click', function () {
+    hideDropdownCards();
+  });
+
+  // #endregion
+
   // #region Videos
 
   // Ensure any promises or async loading are caught
@@ -27,7 +132,6 @@ $(document).ready(() => {
     }
   });
 
-  // Thumb Click
   // Thumb Click
   $('[data-plyr="component"]').on('click', function () {
     const currentPlayer = $(this).find('.plyr_video')[0]; // Assume video element has [data-plyr="video"]
@@ -273,6 +377,7 @@ $(document).ready(() => {
 
   // #region Filters
   //Filter Reset Button
+  window.fsAttributes = window.fsAttributes || [];
   window.fsAttributes.push([
     'cmsfilter',
     (filterInstances) => {
@@ -345,62 +450,31 @@ $(document).ready(() => {
     });
   });
 
-  window.fsAttributes = window.fsAttributes || [];
-  window.fsAttributes.push([
-    'cmsfilter',
-    (filterInstances) => {
-      console.log('cmsfilter Successfully loaded!');
+  // #endregion
+  let modal = $('.winners-modal');
+  let modalBoxes = $('.winners_item');
 
-      // Get Nested Filters
-      $('.solutions-filter_row-checkbox').each(function () {
-        let $this = $(this);
-        let slug = $this.attr('data-slug');
+  // #region Winner Modals
+  $('.awards-all-winners_item, .swiper-slide.cc-speaker').on('click', function () {
+    let index = $(this).index();
 
-        // Load content right below the current .solutions-filter_row-checkbox
-        $this
-          .siblings('.solutions-filter_nest')
-          .load(`/global-tags/${slug} .solutions-filter_row-inner`, function (response, status) {
-            if (status === 'success') {
-              // Hide empty rows
-              $this.siblings('.solutions-filter_nest').each(function () {
-                if (!$(this).children().length) {
-                  $(this).hide();
-                  $this.find('.solutions-filter-inner-icon').hide();
-                }
-              });
-              resetFS();
-            }
-          });
-      });
+    // Reveal
+    modalBoxes.hide();
+    modalBoxes.eq(index).css('display', 'flex');
+    modal.fadeIn();
+  });
 
-      // Get Nested Sub Tags
-      $('.solutions-index_grid')
-        .find('.index_card')
-        .each(function () {
-          let $this = $(this);
-          let slug = $this.attr('data-slug');
+  // // Close modals
+  $('.winners_item-overlay, .winners-modal_close').on('click', function () {
+    modal.hide();
+  });
 
-          // Load content right below the current .solutions-filter_row-checkbox
-          $this
-            .find('[data-nested-wrap]')
-            .load(`/solutions/${slug} [data-nested-filters]`, function (status) {
-              if (status === 'success') {
-                resetFS();
-              }
-            });
-        });
-
-      // The callback passes a `filterInstances` array with all the `CMSFilters` instances on the page.
-      const [filterInstance] = filterInstances;
-      console.log(filterInstance.listInstance);
-    },
-  ]);
-
-  function resetFS() {
-    window.fsAttributes.cmsfilter.destroy();
-    window.fsAttributes.cmsfilter.init();
-  }
-
+  /// Hide Empty links
+  $('.winners-modal_box-head_item').each(function () {
+    if ($(this).find('a').text().trim() === '') {
+      $(this).hide();
+    }
+  });
   // #endregion
 
   // #Copy URL
