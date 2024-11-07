@@ -215,7 +215,6 @@ $(document).ready(() => {
   // Resize
   let resizeTimeout;
   $(window).on('resize', function () {
-    console.log(!isMobile());
     if (isTop()) {
       clearTimeout(resizeTimeout);
       resizeTimeout = setTimeout(() => {
@@ -579,10 +578,10 @@ $(document).ready(() => {
   });
 
   // #endregion
-  let modal = $('.winners-modal');
-  let modalBoxes = $('.winners_item');
 
   // #region Winner Modals
+  let modal = $('.winners-modal');
+  let modalBoxes = $('.winners_item');
   $('.awards-all-winners_item, .swiper-slide.cc-speaker').on('click', function () {
     let index = $(this).index();
 
@@ -605,40 +604,55 @@ $(document).ready(() => {
   });
   // #endregion
 
-  // #Copy URL
-  $(document).ready(function () {
-    $('[data-copy]').on('click', function () {
-      let type = $(this).attr('data-copy');
+  // #region Article
 
-      if (type === 'url') {
-        copyClipboard($(this), $(location).attr('href'));
-      } else {
-        copyClipboard($(this), type);
-      }
+  function displayHostsNames() {
+    let avatars = $('.article-d_avatar');
+    if (!avatars.length) {
+      return;
+    }
+    let names = [];
+    avatars.each(function () {
+      names.push($(this).attr('data-name'));
     });
+    const text = names.length > 1 ? names.join(' & ') : names[0] || '';
+    $('[data-hosts-name]').text(text);
+  }
+  displayHostsNames();
+  // Copy URL
 
-    function copyClipboard(el, val) {
-      // Paste here
-      var $temp = $('<input>');
-      var ogIcon = $(el).find('.w-embed:first-child');
-      var label = $(el).find('.w-embed:last-child');
-      let timeOut;
+  $('[data-copy]').on('click', function () {
+    let type = $(this).attr('data-copy');
 
-      // Click
-      $('body').append($temp);
-      $temp.val(val).select();
-      document.execCommand('copy');
-      $temp.remove();
-
-      clearTimeout(timeOut); // Corrected the function name and variable consistency
-      label.hide();
-      ogIcon.hide();
-      label.css('display', 'flex');
-      timeOut = setTimeout(() => {
-        label.hide();
-        ogIcon.css('display', 'flex');
-      }, 2000);
+    if (type === 'url') {
+      copyClipboard($(this), $(location).attr('href'));
+    } else {
+      copyClipboard($(this), type);
     }
   });
+
+  function copyClipboard(el, val) {
+    // Paste here
+    var $temp = $('<input>');
+    var ogIcon = $(el).find('.w-embed:first-child');
+    var label = $(el).find('.w-embed:last-child');
+    let timeOut;
+
+    // Click
+    $('body').append($temp);
+    $temp.val(val).select();
+    document.execCommand('copy');
+    $temp.remove();
+
+    clearTimeout(timeOut); // Corrected the function name and variable consistency
+    label.hide();
+    ogIcon.hide();
+    label.css('display', 'flex');
+    timeOut = setTimeout(() => {
+      label.hide();
+      ogIcon.css('display', 'flex');
+    }, 2000);
+  }
+
   // #endregion
 });
