@@ -10,9 +10,9 @@ $(document).ready(() => {
 
   let hamOpen = false;
 
-  // !!! add scroll disabler !!!
-
   // #region Nav
+  let nav = $('.nav');
+  let navLogo = $('.nav_logo');
   let dropdownCards = $('.nav_dropdown-content-inner');
   let smallDropdowns = $('.nav_dropdown-small');
   let navMenu = $('.nav_inner');
@@ -20,8 +20,10 @@ $(document).ready(() => {
   let navBrand = $('.nav_brand');
   let navHam = $('.nav_ham');
 
+  // Functions
   function showBigDropdown(index) {
-    dropdownCards.hide().eq(index).css('display', 'flex');
+    hideDropdownCards();
+    dropdownCards.eq(index).css('display', 'flex');
     if (isMobile()) {
       backBtn.css('display', 'flex');
       navBrand.hide();
@@ -29,6 +31,7 @@ $(document).ready(() => {
     navOverlay(true);
   }
   function showSmallDropdown(el) {
+    nav.addClass('nav-open');
     hideDropdownCards();
     $(el).siblings(smallDropdowns).show();
     if (isMobile()) {
@@ -64,31 +67,98 @@ $(document).ready(() => {
     hideDropdownCards();
   }
 
+  // Scroll Disabler
+  var $body = $(document.body);
+  var scrollPosition = 0;
+
+  let logoTimeout;
+  function disableScroll() {
+    nav.addClass('nav-open');
+    var oldWidth = $body.innerWidth();
+    scrollPosition = window.pageYOffset;
+    $body.css({
+      overflow: 'hidden',
+      position: 'fixed',
+      top: `-${scrollPosition}px`,
+      width: oldWidth,
+    });
+  }
+  function enableScroll() {
+    $body.css({
+      overflow: '',
+      position: '',
+      top: '',
+      width: '',
+    });
+    $(window).scrollTop(scrollPosition);
+    clearTimeout(logoTimeout);
+    nav.removeClass('nav-open');
+  }
+  function toggleScroll(state) {
+    if (state) {
+      disableScroll();
+    } else {
+      enableScroll();
+    }
+  }
+
+  // Run on resize
+  const breakpoints = [991, 767, 479];
+  let lastWidth = window.innerWidth;
+
+  function handleBreakpoint() {
+    if (hamOpen) {
+      enableScroll();
+    }
+  }
+
+  // Function to check breakpoints on window resize
+  function checkBreakpoints() {
+    const currentWidth = window.innerWidth;
+
+    breakpoints.forEach((breakpoint) => {
+      if (
+        (lastWidth <= breakpoint && currentWidth > breakpoint) ||
+        (lastWidth >= breakpoint && currentWidth < breakpoint)
+      ) {
+        handleBreakpoint(breakpoint);
+      }
+    });
+
+    // Update lastWidth for the next call
+    lastWidth = currentWidth;
+  }
+
+  // Event listener for window resize
+  window.addEventListener('resize', checkBreakpoints);
+
   // Large Dropdowns
   $('.nav_dropdowns-large .nav_dropdown-trigger').on('mouseenter click', function (e) {
     let index = $(this).index();
     if (isTriggerEvent(e)) {
+      nav.addClass('nav-open');
       showBigDropdown(index);
     }
   });
-
-  $('.nav').on('mouseleave', function (event) {
-    // Check if the mouse is moving to an element inside `.nav`
-    if (!$(event.relatedTarget).closest('.nav').length) {
-      hideDropdownCards();
-    }
-  });
-
-  $(document).on('click', function (event) {
-    if (!$(event.target).closest('.nav').length) {
-      hideDropdownCards();
-    }
-  });
-
   // Small Dropdowns
   $('.nav_dropdowns-small .nav_dropdown-trigger').on('mouseenter click', function (e) {
     if (isTriggerEvent(e)) {
       showSmallDropdown($(this));
+    }
+  });
+
+  // Leaving Nav
+  $('.nav').on('mouseleave', function (event) {
+    if (!$(event.relatedTarget).closest('.nav').length && !isMobile()) {
+      nav.removeClass('nav-open');
+      hideDropdownCards();
+    }
+  });
+
+  // Clicking outside of Nav
+  $(document).on('click', function (event) {
+    if (!$(event.target).closest('.nav').length) {
+      hideDropdownCards();
     }
   });
 
@@ -99,12 +169,68 @@ $(document).ready(() => {
     } else {
       hideMenu();
     }
+    toggleScroll(hamOpen);
   });
 
   // Back Button
   $('.nav_back').on('click', function () {
     hideDropdownCards();
   });
+
+  // Logo scroll
+  function navAnimation(type) {
+    let isDesktop = !isMobile;
+
+    let width = isDesktop ? '43rem' : '18.5rem';
+    let distance = isDesktop ? '7.2rem' : '2.4rem';
+
+    if (type === 'set') {
+      navLogo.addClass('large');
+    } else if (type === 'large') {
+      navLogo.removeClass('no-transition');
+      navLogo.addClass('large');
+    } else {
+      navLogo.removeClass('no-transition');
+      navLogo.removeClass('large');
+    }
+  }
+  function isTop() {
+    return $(window).scrollTop() < 20;
+  }
+
+  // Scroll Part
+  let navTl = gsap.timeline({
+    scrollTrigger: {
+      trigger: $('body'),
+      start: '20px top',
+      onEnter: () => {
+        navAnimation();
+      },
+      onLeaveBack: () => {
+        navAnimation('large');
+      },
+    },
+  });
+
+  // Resize
+  let resizeTimeout;
+  $(window).on('resize', function () {
+    console.log(!isMobile());
+    if (isTop()) {
+      clearTimeout(resizeTimeout);
+      resizeTimeout = setTimeout(() => {
+        navAnimation('set');
+      }, 50);
+    }
+    if (!isMobile()) {
+      navMenu.attr('style', '');
+    }
+  });
+
+  // Init Part
+  if (isTop()) {
+    navAnimation('set');
+  }
 
   // #endregion
 
