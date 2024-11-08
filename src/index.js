@@ -8,9 +8,9 @@ $(document).ready(() => {
     return (e.type === 'mouseenter' && !isMobile()) || (e.type === 'click' && isMobile());
   }
 
+  // #region Nav
   let hamOpen = false;
 
-  // #region Nav
   let nav = $('.nav');
   let navLogo = $('.nav_logo');
   let dropdownCards = $('.nav_dropdown-content-inner');
@@ -146,6 +146,18 @@ $(document).ready(() => {
       showSmallDropdown($(this));
     }
   });
+  // Sub Nav
+  $('.tel_nav-menu').on('mouseenter click', function (e) {
+    if (isTriggerEvent(e)) {
+      $('.tel_nav-dropdown').show();
+      navHam.addClass('cc-open');
+    }
+  });
+  // Sub Nav Leave
+  $('.tel_nav-menu').on('mouseleave', function (e) {
+    $('.tel_nav-dropdown').hide();
+    navHam.removeClass('cc-open');
+  });
 
   // Leaving Nav
   $('.nav').on('mouseleave', function (event) {
@@ -159,6 +171,10 @@ $(document).ready(() => {
   $(document).on('click', function (event) {
     if (!$(event.target).closest('.nav').length) {
       hideDropdownCards();
+    }
+    if (!$(event.target).closest('.tel_nav-menu').length) {
+      $('.tel_nav-dropdown').hide();
+      navHam.removeClass('cc-open');
     }
   });
 
@@ -238,7 +254,7 @@ $(document).ready(() => {
   // Ensure any promises or async loading are caught
   $('.plyr_video').each(function () {
     let playerOptions = {
-      controls: ['play', 'progress', 'current-time', 'mute', 'volume'],
+      controls: ['play', 'progress', 'mute'],
       clickToPlay: true,
     };
 
@@ -264,6 +280,11 @@ $(document).ready(() => {
     const currentPlayer = $(this).find('.plyr_video')[0]; // Assume video element has [data-plyr="video"]
     pauseAllPlayers(currentPlayer);
     $(this).find('[data-plyr="cover"]').hide();
+  });
+
+  // Pause Click
+  $('[data-plyr="pause"]').on('click', function () {
+    pauseAllPlayers();
   });
 
   // Function to pause all players except the current one
@@ -502,9 +523,10 @@ $(document).ready(() => {
 
   // #endregion
 
-  // #region Filters
+  // #region FS Attributes
   //Filter Reset Button
   window.fsAttributes = window.fsAttributes || [];
+  // Filter
   window.fsAttributes.push([
     'cmsfilter',
     (filterInstances) => {
@@ -538,12 +560,61 @@ $(document).ready(() => {
             updateResetBtn(0);
 
             filterInstance.listInstance.on('renderitems', function () {
+              highlightWords();
               let entries = filterInstance.filtersData[0].values.size;
               updateResetBtn(entries);
             });
           }
         }
       }
+    },
+  ]);
+  // Load
+  window.fsAttributes = window.fsAttributes || [];
+  window.fsAttributes.push([
+    'cmsload',
+    (listInstances) => {
+      if (listInstances && listInstances.length > 0) {
+        // The callback passes a `listInstances` array with all the `CMSList` instances on the page.
+        const [listInstance] = listInstances;
+
+        // The `renderitems` event runs whenever the list renders items after switching pages.
+        listInstance.on('renderitems', (renderedItems) => {
+          highlightWords();
+        });
+      }
+    },
+  ]);
+
+  // Combine
+  window.fsAttributes = window.fsAttributes || [];
+  window.fsAttributes.push([
+    'cmscombine',
+    (listInstances) => {
+      console.log(listInstances[1]);
+      listInstances.forEach((element) => {
+        let listAttr = $(element.list).attr('fs-cmscombine-element');
+        if (listAttr === 'list-2') {
+          gsap.fromTo(
+            $('.hp-hero_featured-list .w-dyn-item'),
+            {
+              opacity: 0,
+              yPercent: 50,
+            },
+            {
+              opacity: 1,
+              yPercent: 0,
+              stagger: 0.1,
+              duration: 1,
+              ease: 'power2.inOut',
+            }
+          );
+        }
+        if (listAttr === 'list-2') {
+          document.querySelector('[fs-cmssort-element="trigger"]').click();
+          console.log('cmscombine Successfully loaded!');
+        }
+      });
     },
   ]);
 
@@ -579,6 +650,16 @@ $(document).ready(() => {
 
   // #endregion
 
+  // #region CMS
+  $('[data-hide-empty]').each(function () {
+    let self = $(this);
+
+    if (self.find('.w-dyn-item').length <= 0) {
+      self.hide();
+    }
+  });
+  // #endregion
+
   // #region Winner Modals
   let modal = $('.winners-modal');
   let modalBoxes = $('.winners_item');
@@ -606,6 +687,52 @@ $(document).ready(() => {
 
   // #region Article
 
+  // Heading Highlights
+  function highlightWords() {
+    $('[data-highlight]').each(function () {
+      let highlight = $(this).attr('data-highlight');
+      if (!highlight) return;
+
+      // Regex to match the highlight text case-insensitively
+      let regex = new RegExp(`(${highlight})`, 'gi');
+
+      // Replace matching text with a span wrapping it
+      $(this).html(function (_, html) {
+        return html.replace(regex, '<span class="highlighted">$1</span>');
+      });
+    });
+  }
+
+  // Breadcrumps
+  function updatesTagsLinks() {
+    $('[data-link-tag]').each(function () {
+      let href = $(this).attr('href');
+      const query = encodeURIComponent($(this).text()).replace(/%20/g, '+');
+      $(this).attr('href', `${href}?category=${query}`);
+    });
+  }
+  // init
+  $('[data-link-category]').each(function () {
+    let category = $(this).attr('data-link-category');
+    if (!category) {
+      updatesTagsLinks();
+      return;
+    }
+
+    let href;
+    if (category === 'Entreprenista') {
+      href = 'podcast-entreprenista';
+    } else if (category === 'Startups in Stilettos') {
+      href = 'podcast-startups-in-stilettos';
+    }
+
+    // Links
+    $(this).attr('href', `/${href}`);
+    $('[data-link-tag]').attr('href', `/${href}`);
+    updatesTagsLinks();
+  });
+
+  // Display HostsNames
   function displayHostsNames() {
     let avatars = $('.article-d_avatar');
     if (!avatars.length) {
@@ -619,8 +746,8 @@ $(document).ready(() => {
     $('[data-hosts-name]').text(text);
   }
   displayHostsNames();
-  // Copy URL
 
+  // Copy URL
   $('[data-copy]').on('click', function () {
     let type = $(this).attr('data-copy');
 
@@ -655,4 +782,33 @@ $(document).ready(() => {
   }
 
   // #endregion
+
+  // #region Animations
+  let circleTl = gsap.timeline({
+    scrollTrigger: {
+      trigger: '.info-session_circle',
+      start: 'bottom 95%',
+      endTrigger: '.section.cc-testimonials',
+      end: 'top bottom',
+      invalidateOnRefresh: true,
+      scrub: 1,
+    },
+  });
+
+  circleTl.to('.info-session_circle-bg', {
+    width: () => {
+      return (window.innerWidth * 2) / 10 + 'rem';
+    },
+  });
+
+  $('.hp-hero_featured-wrap').each(function () {
+    let mask = $(this).find('.hp-hero_mask');
+    let label = $(this).find('.hp-hero_visual-label').find('p');
+    let texts = $(this).find('.hp-hero_content').find('p');
+
+    let tl = gsap.timeline({ defaults: { ease: 'power2.inOut', duration: 1.5 } });
+    tl.to(mask, { scaleX: 0 });
+    tl.fromTo(label, { x: '-3rem', opacity: 0 }, { x: '0rem', opacity: 1 }, '<');
+    tl.fromTo(texts, { y: '2rem', opacity: 0 }, { y: '0rem', opacity: 1, stagger: 0.2 }, '<0.2');
+  });
 });
