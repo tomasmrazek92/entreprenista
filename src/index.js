@@ -23,7 +23,7 @@ $(document).ready(() => {
   // Functions
   function showBigDropdown(index) {
     hideDropdownCards();
-    dropdownCards.eq(index).css('display', 'flex');
+    dropdownCards.eq(index).addClass('is-open');
     if (isMobile()) {
       backBtn.css('display', 'flex');
       navBrand.hide();
@@ -33,7 +33,7 @@ $(document).ready(() => {
   function showSmallDropdown(el) {
     nav.addClass('nav-open');
     hideDropdownCards();
-    $(el).siblings(smallDropdowns).show();
+    $(el).siblings(smallDropdowns).addClass('is-open');
     if (isMobile()) {
       backBtn.css('display', 'flex');
       navBrand.hide();
@@ -41,8 +41,8 @@ $(document).ready(() => {
     navOverlay(true);
   }
   function hideDropdownCards() {
-    dropdownCards.hide();
-    smallDropdowns.hide();
+    dropdownCards.removeClass('is-open');
+    smallDropdowns.removeClass('is-open');
     backBtn.hide();
     navBrand.show();
     navOverlay(false);
@@ -150,13 +150,13 @@ $(document).ready(() => {
   $('.tel_nav-menu').on('mouseenter click', function (e) {
     if (isTriggerEvent(e)) {
       $('.tel_nav-dropdown').show();
-      navHam.addClass('cc-open');
+      navHam.filter('.sub').addClass('cc-open');
     }
   });
   // Sub Nav Leave
   $('.tel_nav-menu').on('mouseleave', function (e) {
     $('.tel_nav-dropdown').hide();
-    navHam.removeClass('cc-open');
+    navHam.filter('.sub').removeClass('cc-open');
   });
 
   // Leaving Nav
@@ -174,7 +174,7 @@ $(document).ready(() => {
     }
     if (!$(event.target).closest('.tel_nav-menu').length) {
       $('.tel_nav-dropdown').hide();
-      navHam.removeClass('cc-open');
+      navHam.filter('.sub').removeClass('cc-open');
     }
   });
 
@@ -369,6 +369,10 @@ $(document).ready(() => {
         slidesPerView: 1,
         centeredSlides: true,
         loop: true,
+        effect: 'fade',
+        fadeEffect: {
+          crossFade: true,
+        },
         spaceBetween: 12,
         on: {
           init: (swiper) => {
@@ -391,7 +395,7 @@ $(document).ready(() => {
       'featured-events',
       {
         slidesPerView: 1,
-        spaceBetween: 24,
+        spaceBetween: 240,
       },
       'all',
     ],
@@ -591,29 +595,25 @@ $(document).ready(() => {
   window.fsAttributes.push([
     'cmscombine',
     (listInstances) => {
-      console.log(listInstances[1]);
       listInstances.forEach((element) => {
         let listAttr = $(element.list).attr('fs-cmscombine-element');
-        if (listAttr === 'list-2') {
-          gsap.fromTo(
-            $('.hp-hero_featured-list .w-dyn-item'),
-            {
-              opacity: 0,
-              yPercent: 50,
-            },
-            {
-              opacity: 1,
-              yPercent: 0,
-              stagger: 0.1,
-              duration: 1,
-              ease: 'power2.inOut',
-            }
-          );
-        }
-        if (listAttr === 'list-2') {
-          document.querySelector('[fs-cmssort-element="trigger"]').click();
-          console.log('cmscombine Successfully loaded!');
-        }
+
+        gsap.fromTo(
+          $('.hp-hero_featured-list .w-dyn-item'),
+          {
+            opacity: 0,
+            yPercent: 50,
+          },
+          {
+            opacity: 1,
+            yPercent: 0,
+            stagger: 0.1,
+            duration: 1,
+            ease: 'power2.inOut',
+          }
+        );
+
+        document.querySelector('[fs-cmssort-element="trigger"]').click();
       });
     },
   ]);
@@ -784,6 +784,20 @@ $(document).ready(() => {
   // #endregion
 
   // #region Animations
+
+  // Homepage Hero
+  $('.hp-hero_featured-wrap').each(function () {
+    let mask = $(this).find('.hp-hero_mask');
+    let label = $(this).find('.hp-hero_visual-label').find('p');
+    let texts = $(this).find('.hp-hero_content').find('p');
+
+    let tl = gsap.timeline({ defaults: { ease: 'power2.inOut', duration: 1.5 } });
+    tl.to(mask, { scaleX: 0 });
+    tl.fromTo(label, { x: '-3rem', opacity: 0 }, { x: '0rem', opacity: 1 }, '<');
+    tl.fromTo(texts, { y: '2rem', opacity: 0 }, { y: '0rem', opacity: 1, stagger: 0.2 }, '<0.2');
+  });
+
+  // Circle
   let circleTl = gsap.timeline({
     scrollTrigger: {
       trigger: '.info-session_circle',
@@ -801,14 +815,54 @@ $(document).ready(() => {
     },
   });
 
-  $('.hp-hero_featured-wrap').each(function () {
-    let mask = $(this).find('.hp-hero_mask');
-    let label = $(this).find('.hp-hero_visual-label').find('p');
-    let texts = $(this).find('.hp-hero_content').find('p');
+  // Stores for revering
+  let splitLetters = {};
+  let scrollTriggers = [];
 
-    let tl = gsap.timeline({ defaults: { ease: 'power2.inOut', duration: 1.5 } });
-    tl.to(mask, { scaleX: 0 });
-    tl.fromTo(label, { x: '-3rem', opacity: 0 }, { x: '0rem', opacity: 1 }, '<');
-    tl.fromTo(texts, { y: '2rem', opacity: 0 }, { y: '0rem', opacity: 1, stagger: 0.2 }, '<0.2');
+  // Functions
+  function initTitles() {
+    let linesTargets = document.querySelectorAll('[data-title-lines]');
+
+    // Create a new SplitType instance
+    splitLetters = new SplitType(linesTargets, {
+      types: 'lines',
+    });
+
+    linesTargets.forEach((wrap) => {
+      let lines = wrap.querySelectorAll('.line');
+      lines.forEach((line, index) => {
+        // Store each ScrollTrigger in the array
+        scrollTriggers.push(
+          gsap.to(line, {
+            x: () => (index % 2 === 0 ? '1em' : '-1em'),
+            ease: 'power2.out',
+            scrollTrigger: {
+              trigger: wrap,
+              start: 'top bottom',
+              end: 'bottom top',
+              scrub: 1,
+            },
+          }).scrollTrigger
+        );
+      });
+    });
+  }
+  function resetTitles() {
+    // Kill each stored ScrollTrigger
+    scrollTriggers.forEach((trigger) => trigger.kill());
+    scrollTriggers = []; // Clear the array for the next initialization
+
+    if (splitLetters.revert) splitLetters.revert(); // Revert SplitType instance
+  }
+
+  // Init
+  initTitles();
+
+  // Resize
+  window.addEventListener('resize', () => {
+    resetTitles();
+    initTitles();
   });
+
+  // #endregion
 });

@@ -53,7 +53,7 @@ const addUniqueClassesToElements = (context, swiperSelector, uniqueKey, controlS
 // Merge default and custom swiper options
 const getMergedSwiperOptions = (options, uniqueKey) => {
   return Object.assign({}, options, {
-    spaceBetween: 32,
+    speed: 1000,
     navigation: {
       prevEl: `.swiper-arrow.prev.${uniqueKey}`,
       nextEl: `.swiper-arrow.next.${uniqueKey}`,
