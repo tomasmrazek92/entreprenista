@@ -322,6 +322,7 @@ $(document).ready(() => {
           },
           992: {
             slidesPerView: 3,
+            spaceBetween: 32,
           },
         },
         on: {
@@ -356,6 +357,7 @@ $(document).ready(() => {
           },
           992: {
             slidesPerView: 3,
+            spaceBetween: 32,
           },
         },
       },
@@ -596,23 +598,6 @@ $(document).ready(() => {
     'cmscombine',
     (listInstances) => {
       listInstances.forEach((element) => {
-        let listAttr = $(element.list).attr('fs-cmscombine-element');
-
-        gsap.fromTo(
-          $('.hp-hero_featured-list .w-dyn-item'),
-          {
-            opacity: 0,
-            yPercent: 50,
-          },
-          {
-            opacity: 1,
-            yPercent: 0,
-            stagger: 0.1,
-            duration: 1,
-            ease: 'power2.inOut',
-          }
-        );
-
         document.querySelector('[fs-cmssort-element="trigger"]').click();
       });
     },
@@ -795,6 +780,21 @@ $(document).ready(() => {
     tl.to(mask, { scaleX: 0 });
     tl.fromTo(label, { x: '-3rem', opacity: 0 }, { x: '0rem', opacity: 1 }, '<');
     tl.fromTo(texts, { y: '2rem', opacity: 0 }, { y: '0rem', opacity: 1, stagger: 0.2 }, '<0.2');
+    tl.fromTo(
+      $('.hp-hero_featured-list .hp-hero_featured-item'),
+      {
+        opacity: 0,
+        yPercent: 50,
+      },
+      {
+        opacity: 1,
+        yPercent: 0,
+        stagger: 0.1,
+        duration: 1,
+        ease: 'power2.inOut',
+      },
+      '<'
+    );
   });
 
   // Circle
