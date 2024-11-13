@@ -865,10 +865,14 @@ $(document).ready(() => {
   // Init
   initTitles();
 
-  // Resize
+  let tilesLastWidth = window.innerWidth;
   window.addEventListener('resize', () => {
-    resetTitles();
-    initTitles();
+    const currentWidth = window.innerWidth;
+    if (currentWidth !== tilesLastWidth) {
+      resetTitles();
+      initTitles();
+      tilesLastWidth = currentWidth;
+    }
   });
 
   // #endregion
