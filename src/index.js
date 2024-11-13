@@ -214,21 +214,28 @@ $(document).ready(() => {
     return $(window).scrollTop() < 20;
   }
 
-  // Scroll Part
-  let navTl = gsap.timeline({
-    scrollTrigger: {
-      trigger: $('body'),
-      start: '20px top',
-      onEnter: () => {
-        navAnimation();
-      },
-      onLeaveBack: () => {
-        navAnimation('large');
-      },
-    },
+  // Custom scroll handler for mobile
+  let scrollTriggerPoint = 20; // Set scroll point for trigger
+  let isNavSmall = false; // Track nav state to avoid redundant calls
+
+  function checkScroll() {
+    let scrollTop = $(window).scrollTop();
+
+    if (scrollTop >= scrollTriggerPoint && !isNavSmall) {
+      navAnimation();
+      isNavSmall = true;
+    } else if (scrollTop < scrollTriggerPoint && isNavSmall) {
+      navAnimation('large');
+      isNavSmall = false;
+    }
+  }
+
+  // Attach scroll event
+  $(window).on('scroll', function () {
+    checkScroll();
   });
 
-  // Resize
+  // Resize handler remains the same
   let resizeTimeout;
   $(window).on('resize', function () {
     if (isTop()) {
