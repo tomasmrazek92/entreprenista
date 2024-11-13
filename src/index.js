@@ -257,43 +257,6 @@ $(document).ready(() => {
   // #endregion
 
   // #region Videos
-
-  // Ensure any promises or async loading are caught
-  $('.plyr_video').each(function () {
-    let playerOptions = {
-      controls: ['play', 'progress', 'mute'],
-      clickToPlay: true,
-    };
-
-    try {
-      // Get the video src from the parent attribute
-      const videoSrc = $(this).parent().attr('data-video-src');
-
-      // Set the source for the current video element
-      if (videoSrc) {
-        $(this).attr('src', videoSrc);
-      }
-
-      // Initialize the player
-      const player = new Plyr($(this), playerOptions);
-      players.push(player);
-    } catch (e) {
-      console.error('Error initializing Plyr:', e);
-    }
-  });
-
-  // Thumb Click
-  $('[data-plyr="component"]').on('click', function () {
-    const currentPlayer = $(this).find('.plyr_video')[0]; // Assume video element has [data-plyr="video"]
-    pauseAllPlayers(currentPlayer);
-    $(this).find('[data-plyr="cover"]').hide();
-  });
-
-  // Pause Click
-  $('[data-plyr="pause"]').on('click', function () {
-    pauseAllPlayers();
-  });
-
   // Function to pause all players except the current one
   function pauseAllPlayers(currentPlayer) {
     // Show all covers
@@ -306,6 +269,45 @@ $(document).ready(() => {
       }
     });
   }
+  function initVideos() {
+    // Ensure any promises or async loading are caught
+    $('.plyr_video').each(function () {
+      let playerOptions = {
+        controls: ['play', 'progress', 'mute'],
+        clickToPlay: true,
+      };
+
+      try {
+        // Get the video src from the parent attribute
+        const videoSrc = $(this).parent().attr('data-video-src');
+
+        // Set the source for the current video element
+        if (videoSrc) {
+          $(this).attr('src', videoSrc);
+        }
+
+        // Initialize the player
+        const player = new Plyr($(this), playerOptions);
+        players.push(player);
+      } catch (e) {
+        console.error('Error initializing Plyr:', e);
+      }
+    });
+
+    // Thumb Click
+    $('[data-plyr="component"]').on('click', function () {
+      const currentPlayer = $(this).find('.plyr_video')[0]; // Assume video element has [data-plyr="video"]
+      pauseAllPlayers(currentPlayer);
+      $(this).find('[data-plyr="cover"]').hide();
+    });
+
+    // Pause Click
+    $('[data-plyr="pause"]').on('click', function () {
+      pauseAllPlayers();
+    });
+  }
+  // Init
+  initVideos();
 
   // #endregion
 
@@ -594,6 +596,9 @@ $(document).ready(() => {
         // The `renderitems` event runs whenever the list renders items after switching pages.
         listInstance.on('renderitems', (renderedItems) => {
           highlightWords();
+          if ($('.plyr_video').length) {
+            initVideos();
+          }
         });
       }
     },
