@@ -595,6 +595,7 @@ $(document).ready(() => {
 
         // The `renderitems` event runs whenever the list renders items after switching pages.
         listInstance.on('renderitems', (renderedItems) => {
+          updateExternalLinks();
           highlightWords();
           if ($('.plyr_video').length) {
             initVideos();
@@ -660,7 +661,7 @@ $(document).ready(() => {
   // #region Winner Modals
   let modal = $('.winners-modal');
   let modalBoxes = $('.winners_item');
-  $('.awards-all-winners_item, .swiper-slide.cc-speaker').on('click', function () {
+  $('[data-modal="trigger"]').on('click', function () {
     let index = $(this).index();
 
     // Reveal
@@ -670,7 +671,7 @@ $(document).ready(() => {
   });
 
   // // Close modals
-  $('.winners_item-overlay, .winners-modal_close').on('click', function () {
+  $('[data-modal="close"]').on('click', function () {
     modal.hide();
   });
 
@@ -690,12 +691,9 @@ $(document).ready(() => {
       let highlight = $(this).attr('data-highlight');
       if (!highlight) return;
 
-      // Regex to match the highlight text case-insensitively
-      let regex = new RegExp(`(${highlight})`, 'gi');
-
       // Replace matching text with a span wrapping it
       $(this).html(function (_, html) {
-        return html.replace(regex, '<span class="highlighted">$1</span>');
+        return html.split(highlight).join(`<span class="highlighted">${highlight}</span>`);
       });
     });
   }
@@ -777,6 +775,22 @@ $(document).ready(() => {
       ogIcon.css('display', 'flex');
     }, 2000);
   }
+
+  // External links to new tab
+  function updateExternalLinks() {
+    document.querySelectorAll('a[href]').forEach((link) => {
+      const href = link.getAttribute('href');
+      if (href.startsWith('#')) return;
+
+      const isInternal = href.startsWith('/') || href.includes(window.location.hostname);
+
+      if (!isInternal) {
+        link.setAttribute('target', '_blank');
+        link.setAttribute('rel', 'noopener noreferrer');
+      }
+    });
+  }
+  updateExternalLinks();
 
   // #endregion
 
