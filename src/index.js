@@ -827,9 +827,10 @@ $(document).ready(() => {
   let circleTl = gsap.timeline({
     scrollTrigger: {
       trigger: '.info-session_circle',
-      start: 'bottom 95%',
+      start: 'bottom 90%',
       endTrigger: '.section.cc-testimonials',
       end: 'top bottom',
+      markers: true,
       invalidateOnRefresh: true,
       scrub: 1,
     },
