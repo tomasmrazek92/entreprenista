@@ -830,7 +830,6 @@ $(document).ready(() => {
       start: 'bottom 90%',
       endTrigger: '.section.cc-testimonials',
       end: 'top bottom',
-      markers: true,
       invalidateOnRefresh: true,
       scrub: 1,
     },
