@@ -776,6 +776,13 @@ $(document).ready(() => {
     }, 2000);
   }
 
+  // Klaviyo Popup
+  $('[klaviyo-popup-trigger]').on('click', function () {
+    let formID = $(this).attr('klaviyo-popup-trigger');
+    window._klOnsite = window._klOnsite || [];
+    window._klOnsite.push(['openForm', formID]);
+  });
+
   // External links to new tab
   function updateExternalLinks() {
     document.querySelectorAll('a[href]').forEach((link) => {
