@@ -538,6 +538,39 @@ $(document).ready(() => {
 
   // #endregion
 
+  // #region Winner Modals
+  function initModals() {
+    let modal = $('.winners-modal');
+    let modalBoxes = $('.winners_item');
+
+    if (!modal.length) {
+      return;
+    }
+
+    $('[data-modal="trigger"]').on('click', function () {
+      let index = $(this).index();
+
+      // Reveal
+      modalBoxes.hide();
+      modalBoxes.eq(index).css('display', 'flex');
+      modal.fadeIn();
+    });
+
+    // // Close modals
+    $('[data-modal="close"]').on('click', function () {
+      modal.hide();
+    });
+
+    /// Hide Empty links
+    $('.winners-modal_box-head_item').each(function () {
+      if ($(this).find('a').text().trim() === '') {
+        $(this).hide();
+      }
+    });
+  }
+  initModals();
+  // #endregion
+
   // #region FS Attributes
   //Filter Reset Button
   window.fsAttributes = window.fsAttributes || [];
@@ -597,6 +630,7 @@ $(document).ready(() => {
         listInstance.on('renderitems', (renderedItems) => {
           updateExternalLinks();
           highlightWords();
+          initModals();
           if ($('.plyr_video').length) {
             initVideos();
           }
@@ -654,31 +688,6 @@ $(document).ready(() => {
 
     if (self.find('.w-dyn-item').length <= 0) {
       self.hide();
-    }
-  });
-  // #endregion
-
-  // #region Winner Modals
-  let modal = $('.winners-modal');
-  let modalBoxes = $('.winners_item');
-  $('[data-modal="trigger"]').on('click', function () {
-    let index = $(this).index();
-
-    // Reveal
-    modalBoxes.hide();
-    modalBoxes.eq(index).css('display', 'flex');
-    modal.fadeIn();
-  });
-
-  // // Close modals
-  $('[data-modal="close"]').on('click', function () {
-    modal.hide();
-  });
-
-  /// Hide Empty links
-  $('.winners-modal_box-head_item').each(function () {
-    if ($(this).find('a').text().trim() === '') {
-      $(this).hide();
     }
   });
   // #endregion
