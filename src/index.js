@@ -563,7 +563,9 @@ $(document).ready(() => {
 
     /// Hide Empty links
     $('.winners-modal_box-head_item').each(function () {
-      if ($(this).find('a').text().trim() === '') {
+      const href = $(this).attr('href');
+      console.log(href);
+      if (!href || href === '#') {
         $(this).hide();
       }
     });
@@ -911,4 +913,106 @@ $(document).ready(() => {
   });
 
   // #endregion
+
+  // #region Klavyio Membership
+  const klaviyoForms = document.querySelectorAll('[data-klaviyo-list-id]');
+
+  if (klaviyoForms) {
+    klaviyoForms.forEach((form) => {
+      form.addEventListener('submit', function (event) {
+        // Always prevent the default form submission
+        event.preventDefault();
+
+        // Form Data Extraction
+        const formData = new FormData(form);
+        const attributes = {};
+        const standardAttributes = ['email', 'phone_number', 'first_name', 'last_name'];
+        const nestedObjects = {
+          location: ['address1', 'address2', 'city', 'country', 'region', 'zip', 'timezone', 'ip'],
+        };
+
+        for (let [key, value] of formData.entries()) {
+          if (standardAttributes.includes(key)) {
+            attributes[key] = value;
+          } else {
+            let addedToNested = false;
+            for (const [objectName, fields] of Object.entries(nestedObjects)) {
+              if (fields.includes(key)) {
+                if (!attributes[objectName]) attributes[objectName] = {};
+                attributes[objectName][key] = value;
+                addedToNested = true;
+                break;
+              }
+            }
+            if (!addedToNested) {
+              if (!attributes.properties) attributes.properties = {};
+              attributes.properties[key] = value;
+            }
+          }
+        }
+
+        console.log(attributes);
+
+        // Klaviyo API Configuration
+        const klaviyoListId = form.getAttribute('data-klaviyo-list-id');
+        const options = {
+          method: 'POST',
+          headers: {
+            revision: '2023-08-15',
+            'content-type': 'application/json',
+          },
+          body: JSON.stringify({
+            data: {
+              type: 'subscription',
+              attributes: {
+                custom_source: form.getAttribute('data-name'),
+                profile: {
+                  data: {
+                    type: 'profile',
+                    attributes: attributes,
+                  },
+                },
+              },
+              relationships: { list: { data: { type: 'list', id: klaviyoListId } } },
+            },
+          }),
+        };
+
+        // Flow Configuration
+        // Get the form field values
+        const firstName = attributes.first_name;
+        const lastName = attributes.last_name;
+        const { email } = attributes;
+        const checkoutUrl =
+          'https://connect.entreprenista.com/checkout/join-the-entreprenista-league';
+
+        // Construct the checkout URL
+        const redirectURL = `${checkoutUrl}?name=${encodeURIComponent(
+          firstName
+        )}%20${encodeURIComponent(lastName)}&email=${encodeURIComponent(email)}`;
+
+        // Klaviyo API Call
+        fetch('https://a.klaviyo.com/client/subscriptions/?company_id=XptCwV', options)
+          .then((response) => {
+            if (!response.ok) {
+              return response.json().then((err) => Promise.reject(err));
+            }
+            // Display the success message on successful submission
+            let customSuccessElement = form.closest('.w-form').querySelector('.w-form-done');
+            if (customSuccessElement) {
+              form.style.display = 'none';
+              customSuccessElement.style.display = 'block';
+            }
+            window.location.href = redirectURL;
+          })
+          .catch((err) => {
+            console.error('Error sending data to Klaviyo:', err);
+
+            // Display the error message on error
+            let customErrorElement = form.closest('.w-form').querySelector('.w-form-fail');
+            if (customErrorElement) customErrorElement.style.display = 'block';
+          });
+      });
+    });
+  }
 });

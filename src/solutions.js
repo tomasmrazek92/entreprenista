@@ -49,7 +49,6 @@ $('.solutions-index_grid')
 
 // Wait for both deferred objects to be resolved
 $.when(nestedFiltersDeferred, nestedSubTagsDeferred).done(function () {
-  console.log('hello');
   // When both things are done, we run the FS
   resetFS();
 });
