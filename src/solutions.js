@@ -88,13 +88,37 @@ $('[data-clear-button]').on('click', function () {
   document.querySelector('[fs-cmsfilter-element="clear"]').click();
 });
 
-// Clear nested checkboxes
-$(document).on('change', '.solutions-filter_row-checkbox input[type="checkbox"]', function () {
-  if (!this.checked) {
-    $(this)
+$(document).on(
+  'change',
+  '.solutions-filter_row-checkbox:not(.cc-small) input[type="checkbox"]',
+  function () {
+    if (!this.checked) {
+      $(this)
+        .closest('.solutions-filter_row-checkbox')
+        .siblings('.solutions-filter_nest')
+        .find('input[type="checkbox"]:checked')
+        .trigger('click');
+    }
+
+    // Find all other checkboxes within the same container, excluding the current one
+    const checkboxes = $(this)
       .closest('.solutions-filter_row-checkbox')
-      .siblings('.solutions-filter_nest')
+      .closest('.w-dyn-item')
+      .siblings()
       .find('input[type="checkbox"]:checked')
-      .trigger('click');
+      .not(this);
+
+    // Separate checkboxes with and without `.cc-small` parent
+    const withCCSmall = checkboxes.filter(function () {
+      return $(this).closest('.solutions-filter_row-checkbox').hasClass('cc-small');
+    });
+
+    const withoutCCSmall = checkboxes.filter(function () {
+      return !$(this).closest('.solutions-filter_row-checkbox').hasClass('cc-small');
+    });
+
+    // Trigger clicks in order: with `.cc-small` first, then without
+    withCCSmall.trigger('click');
+    withoutCCSmall.trigger('click');
   }
-});
+);
