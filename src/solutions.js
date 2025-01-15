@@ -79,6 +79,8 @@ window.fsAttributes.push([
       // 3. Initialize CMS Filter after all content is loaded
       await window.fsAttributes.cmsfilter.init();
 
+      $('.solutions-filter_meta').css('visibility', 'visible');
+
       // Set up filter change handler
       const [filterInstance] = await window.fsAttributes.cmsfilter.getInstancePromise();
       if (filterInstance) {
