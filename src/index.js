@@ -627,6 +627,7 @@ $(document).ready(() => {
       if (listInstances && listInstances.length > 0) {
         // The callback passes a `listInstances` array with all the `CMSList` instances on the page.
         const [listInstance] = listInstances;
+        highlightWords();
 
         // The `renderitems` event runs whenever the list renders items after switching pages.
         listInstance.on('renderitems', (renderedItems) => {
